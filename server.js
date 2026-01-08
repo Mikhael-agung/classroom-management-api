@@ -11,10 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/classroom_db', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.DATABASE_URL)
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
@@ -82,7 +79,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`========================================`);
     console.log(`🚀 SERVER BERJALAN: http://localhost:${PORT}`);
-    console.log(`📚 Database: ${process.env.MONGODB_URI || 'classroom_db'}`);
+    console.log(`📚 Database: ${process.env.DATABASE_URL || 'classroom_db'}`);
     console.log(`🐛 Debug Mode: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🎓 Total Data: 5000+ mahasiswa, 100+ ruang, 200+ mata kuliah`);
     console.log(`========================================`);
