@@ -221,9 +221,8 @@ async function generateRuang() {
 }
 
 // ===== GENERATE 200 MATA KULIAH =====
-// ===== GENERATE MATA KULIAH DENGAN DOSEN YANG BENAR =====
 async function generateMataKuliah(dosenList) {
-    console.log('🔨 Generating 200 mata kuliah (25 per jurusan)...');
+    console.log('🔨 Generating 200 mata kuliah (25 per jurusan) - HANYA SEMESTER GANJIL...');
     const matkulList = [];
     let matkulCounter = 1;
 
@@ -244,10 +243,11 @@ async function generateMataKuliah(dosenList) {
         for (let i = 0; i < 25; i++) {
             const nama = selectedMatkulNames[i];
 
-            // Semester 1-8 secara merata
-            const semester = Math.floor(i / 3) + 1; // 1-8
-            const safeSemester = Math.min(semester, 8);
-            const semesterTipe = safeSemester % 2 === 1 ? 'Ganjil' : 'Genap';
+            // MODIFIKASI: SEMUA mata kuliah hanya untuk semester ganjil
+            // Distribusi merata ke semester 1, 3, 5, 7
+            const semesterIndex = i % 4; // 0, 1, 2, 3
+            const semester = SEMESTER_GANJIL[semesterIndex]; // 1, 3, 5, 7
+            const semesterTipe = 'Ganjil'; // SELALU GANJIL
 
             // Pilih dosen untuk matkul ini
             let selectedDosen;
@@ -263,38 +263,43 @@ async function generateMataKuliah(dosenList) {
                 kode: generateKodeMatkul(jurusan, matkulCounter),
                 nama: nama,
                 sks: faker.helpers.arrayElement([2, 3, 4]),
-                dosen_id: selectedDosen._id, // INI DOSEN_ID YANG BENAR!
+                dosen_id: selectedDosen._id,
                 jurusan: jurusan,
                 fakultas: fakultas,
-                semester_tipe: semesterTipe,
-                semester: safeSemester,
-                deskripsi: `Mata kuliah ${nama} untuk jurusan ${jurusan}, semester ${safeSemester} (${semesterTipe}) - Dosen: ${selectedDosen.nama}`
+                semester_tipe: semesterTipe, // SELALU 'Ganjil'
+                semester: semester, // HANYA 1, 3, 5, 7
+                deskripsi: `Mata kuliah ${nama} untuk jurusan ${jurusan}, semester ${semester} (${semesterTipe}) - Dosen: ${selectedDosen.nama}`
             });
 
             matkulCounter++;
         }
 
-        console.log(`   ✅ Generated 25 mata kuliah untuk jurusan ${jurusan}`);
-        console.log(`      Dosen available: ${dosenJurusan.length}`);
-        if (dosenJurusan.length > 0) {
-            console.log(`      Sample dosen: ${dosenJurusan[0].nama} (${dosenJurusan[0].kode_dosen})`);
-        }
+        console.log(`   ✅ Generated 25 mata kuliah untuk jurusan ${jurusan} (semua ganjil)`);
     }
 
-    console.log(`✅ Generated ${matkulList.length} mata kuliah`);
+    console.log(`✅ Generated ${matkulList.length} mata kuliah (semua semester ganjil)`);
+
+    // Validasi distribusi semester
+    console.log('📊 Distribusi semester pada mata kuliah:');
+    const semesterCount = {};
+    matkulList.forEach(mk => {
+        semesterCount[mk.semester] = (semesterCount[mk.semester] || 0) + 1;
+    });
+
+    Object.entries(semesterCount).sort((a, b) => a[0] - b[0]).forEach(([sem, count]) => {
+        console.log(`   Semester ${sem}: ${count} mata kuliah`);
+    });
 
     // Validasi: Pastikan semua mata kuliah punya dosen_id
     const matkulTanpaDosen = matkulList.filter(mk => !mk.dosen_id);
     if (matkulTanpaDosen.length > 0) {
         console.error(`❌ ERROR: ${matkulTanpaDosen.length} mata kuliah tanpa dosen_id!`);
-        matkulTanpaDosen.forEach((mk, idx) => {
-            console.error(`   ${idx + 1}. ${mk.nama} (${mk.jurusan}) - NO DOSEN`);
-        });
         throw new Error('Mata kuliah tanpa dosen assignment');
     }
 
     return matkulList;
 }
+
 
 // ===== GENERATE 5000 MAHASISWA =====
 async function generateMahasiswa() {
@@ -336,13 +341,12 @@ async function generateMahasiswa() {
 
 // ===== GENERATE JADWAL DENGAN CONFLICT CHECKING =====
 async function generateJadwal(mataKuliahList, ruangList, dosenList) {
-    console.log('🔨 Generating jadwal...');
+    console.log('🔨 Generating jadwal untuk SEMESTER GANJIL...');
     const jadwalList = [];
 
-    // Pastikan mata kuliah sudah punya _id (sudah di-insert)
+    // Pastikan mata kuliah sudah punya _id
     if (!mataKuliahList[0] || !mataKuliahList[0]._id) {
         console.error('❌ ERROR: Mata kuliah belum di-insert ke database!');
-        console.error('   Pastikan insert mata kuliah dulu sebelum generate jadwal');
         return jadwalList;
     }
 
@@ -363,10 +367,11 @@ async function generateJadwal(mataKuliahList, ruangList, dosenList) {
         console.log(`   📅 Generating jadwal untuk jurusan: ${jurusan}`);
 
         const matkulJurusan = matkulByJurusan[jurusan];
-        const ruangSamples = ruangList.slice(0, 15); // Ambil 15 ruang
+        const ruangSamples = ruangList.slice(0, 15);
 
-        // Buat 15-20 jadwal per jurusan
-        const jumlahJadwal = Math.min(20, matkulJurusan.length);
+        // MODIFIKASI: Ambil semua mata kuliah (25) untuk jurusan ini
+        // Karena semua mata kuliah untuk semester ganjil, kita bisa buat jadwal untuk semua
+        const jumlahJadwal = Math.min(25, matkulJurusan.length); // Ambil semua 25 matkul
 
         for (let i = 0; i < jumlahJadwal; i++) {
             const matkul = matkulJurusan[i];
@@ -375,24 +380,24 @@ async function generateJadwal(mataKuliahList, ruangList, dosenList) {
             const ruang = faker.helpers.arrayElement(ruangSamples);
             const kelas = faker.helpers.arrayElement(['A', 'B', 'C', 'D']);
 
-            // Tentukan semester aktif
-            const semesterAktif = matkul.semester_tipe === 'Ganjil' ? 'Ganjil 2023/2024' : 'Genap 2023/2024';
+            // MODIFIKASI: Jadwal hanya untuk semester aktif Ganjil
+            const semesterAktif = 'Ganjil 2023/2024'; // SELALU GANJIL
 
             jadwalList.push({
-                mata_kuliah_id: matkul._id, // INI _id YANG SUDAH ADA!
-                ruang_id: ruang._id, // INI _id YANG SUDAH ADA!
+                mata_kuliah_id: matkul._id,
+                ruang_id: ruang._id,
                 hari: hari,
                 jam_mulai: jam[0],
                 jam_selesai: jam[1],
-                semester_aktif: semesterAktif,
+                semester_aktif: semesterAktif, // SELALU 'Ganjil 2023/2024'
                 kelas: kelas
             });
         }
 
-        console.log(`      ✅ Generated ${jumlahJadwal} jadwal`);
+        console.log(`      ✅ Generated ${jumlahJadwal} jadwal untuk ${jurusan}`);
     });
 
-    console.log(`✅ TOTAL generated ${jadwalList.length} jadwal`);
+    console.log(`✅ TOTAL generated ${jadwalList.length} jadwal (semua untuk semester Ganjil)`);
 
     // Tampilkan summary
     console.log('📊 Jadwal per jurusan:');
@@ -490,7 +495,7 @@ async function generateMahasiswaKelas(mahasiswaList, jadwalList, mataKuliahList)
     return mahasiswaKelasList;
 }
 
-// ===== GENERATE BOOKING =====
+
 async function generateBooking(ruangList, dosenList) {
     console.log('🔨 Generating booking ruang...');
     const bookingList = [];
@@ -502,7 +507,6 @@ async function generateBooking(ruangList, dosenList) {
         const tanggal = new Date();
         tanggal.setDate(tanggal.getDate() + daysFromNow);
 
-        // Pastikan tanggal tidak weekend
         if (tanggal.getDay() === 0) tanggal.setDate(tanggal.getDate() + 1);
         if (tanggal.getDay() === 6) tanggal.setDate(tanggal.getDate() + 2);
 

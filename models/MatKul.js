@@ -37,7 +37,7 @@ const MataKuliahSchema = new mongoose.Schema({
     semester_tipe: {
         type: String,
         required: true,
-        enum: ['Ganjil', 'Genap'],
+        enum: ['Ganjil'],
         index: true
     },
     semester: {
