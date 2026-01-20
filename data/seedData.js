@@ -328,99 +328,61 @@ async function generateMahasiswa() {
 }
 
 // ===== GENERATE JADWAL DENGAN CONFLICT CHECKING =====
+// ===== GENERATE JADWAL SIMPLIFIED =====
 async function generateJadwal(mataKuliahList, ruangList, dosenList) {
-    console.log('🔨 Generating jadwal dengan conflict checking...');
+    console.log('🔨 Generating jadwal (simplified version)...');
     const jadwalList = [];
-    const semesterAktif = ['Ganjil 2023/2024', 'Genap 2023/2024'];
 
     // Update mata kuliah dengan dosen_id yang benar
-    const updatedMataKuliah = await Promise.all(mataKuliahList.map(async (mk) => {
+    const updatedMataKuliah = mataKuliahList.map((mk) => {
         // Cari dosen dari jurusan yang sama
         const dosenJurusan = dosenList.find(d => d.jurusan === mk.jurusan);
-        if (dosenJurusan) {
-            return {
-                ...mk,
-                dosen_id: dosenJurusan._id
-            };
-        }
-        // Jika tidak ada dosen di jurusan yang sama, pilih random
         return {
             ...mk,
-            dosen_id: dosenList[Math.floor(Math.random() * dosenList.length)]._id
+            dosen_id: dosenJurusan ? dosenJurusan._id : dosenList[0]._id
         };
-    }));
+    });
 
-    // Generate jadwal untuk setiap semester aktif
-    for (const semester of semesterAktif) {
-        console.log(`   Generating jadwal untuk semester ${semester}...`);
+    // Untuk setiap jurusan, buat beberapa jadwal
+    const jurusanList = Object.keys(MATA_KULIAH_PER_JURUSAN);
 
-        // Filter mata kuliah sesuai semester tipe
-        const tipeSemester = semester.includes('Ganjil') ? 'Ganjil' : 'Genap';
-        const matkulFiltered = updatedMataKuliah.filter(mk => mk.semester_tipe === tipeSemester);
+    for (const jurusan of jurusanList) {
+        console.log(`   Generating jadwal untuk jurusan ${jurusan}...`);
 
-        console.log(`   Found ${matkulFiltered.length} mata kuliah untuk semester ${tipeSemester}`);
+        // Ambil mata kuliah untuk jurusan ini
+        const matkulJurusan = updatedMataKuliah.filter(mk => mk.jurusan === jurusan);
 
-        // Batasi jumlah jadwal per semester (max 50% dari total matkul)
-        const maxJadwalPerSemester = Math.min(400, matkulFiltered.length * 2);
-        const selectedMatkul = faker.helpers.arrayElements(matkulFiltered,
-            Math.min(maxJadwalPerSemester, matkulFiltered.length));
+        // Ambil beberapa ruang
+        const ruangSamples = ruangList.slice(0, 10); // Ambil 10 ruang pertama
 
-        console.log(`   Akan generate jadwal untuk ${selectedMatkul.length} mata kuliah`);
+        // Generate 20-30 jadwal per jurusan
+        const jadwalPerJurusan = faker.number.int({ min: 20, max: 30 });
 
-        let successCount = 0;
-        let failCount = 0;
+        for (let i = 0; i < Math.min(jadwalPerJurusan, matkulJurusan.length); i++) {
+            const matkul = matkulJurusan[i];
+            const hari = faker.helpers.arrayElement(HARI);
+            const jam = faker.helpers.arrayElement(JAM_KULIAH);
+            const ruang = faker.helpers.arrayElement(ruangSamples);
+            const kelas = faker.helpers.arrayElement(['A', 'B', 'C', 'D']);
 
-        for (const matkul of selectedMatkul) {
-            let attempts = 0;
-            let jadwalValid = false;
+            // Tentukan semester aktif berdasarkan semester_tipe
+            const semesterAktif = matkul.semester_tipe === 'Ganjil' ? 'Ganjil 2023/2024' : 'Genap 2023/2024';
 
-            while (!jadwalValid && attempts < 20) { // Kurangi attempts untuk mempercepat
-                const hari = faker.helpers.arrayElement(HARI);
-                const jam = faker.helpers.arrayElement(JAM_KULIAH);
-                const ruang = faker.helpers.arrayElement(ruangList);
-                const kelas = faker.helpers.arrayElement(['A', 'B', 'C', 'D']);
-
-                try {
-                    // Cek konflik - SIMPLIFIKASI DULU
-                    // Untuk sekarang, skip conflict checking agar cepat
-                    const konflik = false; // Skip dulu
-
-                    if (!konflik) {
-                        // Kapasitas ruang harus cukup
-                        const jmlMahasiswa = faker.number.int({ min: 25, max: 45 });
-                        if (jmlMahasiswa <= ruang.kapasitas) {
-                            jadwalList.push({
-                                mata_kuliah_id: matkul._id,
-                                ruang_id: ruang._id,
-                                hari: hari,
-                                jam_mulai: jam[0],
-                                jam_selesai: jam[1],
-                                semester_aktif: semester,
-                                kelas: kelas
-                            });
-                            jadwalValid = true;
-                            successCount++;
-                        }
-                    }
-                } catch (error) {
-                    console.error(`   Error checking conflict: ${error.message}`);
-                }
-
-                attempts++;
-            }
-
-            if (!jadwalValid) {
-                failCount++;
-                if (failCount % 10 === 0) {
-                    console.warn(`   ⚠️ ${failCount} mata kuliah gagal dibuat jadwal`);
-                }
-            }
+            jadwalList.push({
+                mata_kuliah_id: matkul._id,
+                ruang_id: ruang._id,
+                hari: hari,
+                jam_mulai: jam[0],
+                jam_selesai: jam[1],
+                semester_aktif: semesterAktif,
+                kelas: kelas
+            });
         }
 
-        console.log(`   Semester ${semester}: ${successCount} sukses, ${failCount} gagal`);
+        console.log(`   ✅ Generated ${Math.min(jadwalPerJurusan, matkulJurusan.length)} jadwal untuk ${jurusan}`);
     }
 
-    console.log(`✅ Generated ${jadwalList.length} jadwal`);
+    console.log(`✅ Total generated ${jadwalList.length} jadwal`);
 
     // Distribusi per jurusan
     const distribusiJurusan = {};
@@ -431,7 +393,7 @@ async function generateJadwal(mataKuliahList, ruangList, dosenList) {
         }
     }
 
-    console.log('📊 Distribusi jadwal per jurusan:');
+    console.log('📊 Final distribution per jurusan:');
     Object.entries(distribusiJurusan).forEach(([jurusan, count]) => {
         console.log(`   ${jurusan}: ${count} jadwal`);
     });
@@ -439,13 +401,17 @@ async function generateJadwal(mataKuliahList, ruangList, dosenList) {
     return jadwalList;
 }
 
-// ===== GENERATE MAHASISWA KELAS =====
+// ===== GENERATE MAHASISWA KELAS SIMPLIFIED =====
 async function generateMahasiswaKelas(mahasiswaList, jadwalList, mataKuliahList) {
-    console.log('🔨 Generating mahasiswa kelas (5-7 jadwal per mahasiswa)...');
+    console.log('🔨 Generating mahasiswa kelas...');
     const mahasiswaKelasList = [];
-    let totalAssignments = 0;
 
-    // Group jadwal by jurusan untuk akses cepat
+    if (jadwalList.length === 0) {
+        console.error('❌ Tidak ada jadwal yang tersedia untuk MahasiswaKelas');
+        return mahasiswaKelasList;
+    }
+
+    // Group jadwal by jurusan
     const jadwalByJurusan = {};
     jadwalList.forEach(jadwal => {
         const matkul = mataKuliahList.find(m => m._id.equals(jadwal.mata_kuliah_id));
@@ -457,70 +423,45 @@ async function generateMahasiswaKelas(mahasiswaList, jadwalList, mataKuliahList)
         }
     });
 
-    console.log('📊 Jadwal tersedia per jurusan:');
+    console.log('📊 Available schedules per jurusan:');
     Object.entries(jadwalByJurusan).forEach(([jurusan, jadwals]) => {
-        console.log(`   ${jurusan}: ${jadwals.length} jadwal`);
+        console.log(`   ${jurusan}: ${jadwals.length} schedules`);
     });
 
-    // Jika ada jurusan tanpa jadwal, buat beberapa jadwal darurat
-    const allJurusan = Object.keys(MATA_KULIAH_PER_JURUSAN);
-    for (const jurusan of allJurusan) {
-        if (!jadwalByJurusan[jurusan] || jadwalByJurusan[jurusan].length === 0) {
-            console.log(`⚠️  Jurusan ${jurusan} tidak memiliki jadwal, membuat jadwal darurat...`);
+    let totalAssignments = 0;
+    let skippedCount = 0;
 
-            // Cari mata kuliah untuk jurusan ini
-            const matkulJurusan = mataKuliahList.filter(m => m.jurusan === jurusan);
-            if (matkulJurusan.length > 0) {
-                // Buat 5 jadwal darurat
-                for (let i = 0; i < Math.min(5, matkulJurusan.length); i++) {
-                    const matkul = matkulJurusan[i];
-                    const hari = faker.helpers.arrayElement(HARI);
-                    const jam = faker.helpers.arrayElement(JAM_KULIAH);
-                    const ruang = faker.helpers.arrayElement(await Ruang.find().limit(10));
-
-                    const jadwalDarurat = {
-                        mata_kuliah_id: matkul._id,
-                        ruang_id: ruang._id,
-                        hari: hari,
-                        jam_mulai: jam[0],
-                        jam_selesai: jam[1],
-                        semester_aktif: matkul.semester_tipe === 'Ganjil' ? 'Ganjil 2023/2024' : 'Genap 2023/2024',
-                        kelas: 'A'
-                    };
-
-                    // Insert ke database langsung
-                    const newJadwal = new Jadwal(jadwalDarurat);
-                    await newJadwal.save();
-                    jadwalList.push(newJadwal);
-
-                    if (!jadwalByJurusan[jurusan]) {
-                        jadwalByJurusan[jurusan] = [];
-                    }
-                    jadwalByJurusan[jurusan].push(newJadwal);
-                }
-                console.log(`   ✅ Created 5 emergency schedules for ${jurusan}`);
-            }
-        }
-    }
-
-    // Assign mahasiswa ke jadwal
     for (const mahasiswa of mahasiswaList) {
         const jurusan = mahasiswa.jurusan;
-        const jadwalJurusan = jadwalByJurusan[jurusan] || [];
+        const availableJadwal = jadwalByJurusan[jurusan] || [];
 
-        if (jadwalJurusan.length === 0) {
-            console.warn(`⚠️  Masih tidak ada jadwal untuk jurusan ${jurusan}, mahasiswa ${mahasiswa.nim} dilewati`);
+        if (availableJadwal.length === 0) {
+            skippedCount++;
+            if (skippedCount % 100 === 0) {
+                console.warn(`⚠️  ${skippedCount} mahasiswa dari jurusan ${jurusan} tidak ada jadwal`);
+            }
             continue;
         }
 
-        // Tentukan berapa banyak jadwal untuk mahasiswa ini (5-7)
-        const jumlahJadwal = faker.number.int({ min: 5, max: 7 });
-        const maxAssignments = Math.min(jumlahJadwal, jadwalJurusan.length);
+        // Assign 3-5 jadwal per mahasiswa
+        const jumlahJadwal = faker.number.int({ min: 3, max: 5 });
+        const maxAssign = Math.min(jumlahJadwal, availableJadwal.length);
 
-        // Pilih jadwal secara random (tidak boleh duplikat)
-        const selectedJadwal = faker.helpers.arrayElements(jadwalJurusan, maxAssignments);
+        // Pilih jadwal unik
+        const selectedJadwal = [];
+        const usedIndices = new Set();
 
-        // Buat entri MahasiswaKelas
+        for (let i = 0; i < maxAssign; i++) {
+            let randomIndex;
+            do {
+                randomIndex = faker.number.int({ min: 0, max: availableJadwal.length - 1 });
+            } while (usedIndices.has(randomIndex) && usedIndices.size < availableJadwal.length);
+
+            usedIndices.add(randomIndex);
+            selectedJadwal.push(availableJadwal[randomIndex]);
+        }
+
+        // Create MahasiswaKelas entries
         for (const jadwal of selectedJadwal) {
             mahasiswaKelasList.push({
                 mahasiswa_id: mahasiswa._id,
@@ -536,6 +477,8 @@ async function generateMahasiswaKelas(mahasiswaList, jadwalList, mataKuliahList)
     }
 
     console.log(`✅ Generated ${totalAssignments} assignments untuk ${mahasiswaList.length} mahasiswa`);
+    console.log(`   Skipped ${skippedCount} mahasiswa tanpa jadwal`);
+
     return mahasiswaKelasList;
 }
 
