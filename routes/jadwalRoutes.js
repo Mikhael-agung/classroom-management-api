@@ -2,39 +2,31 @@ const express = require('express');
 const router = express.Router();
 const jadwalController = require('../controllers/jadwalController');
 
-// Insert jadwal (with conflict checking)
+// 1. INSERT JADWAL (with conflict checking)
 router.post('/insert', jadwalController.insertJadwal);
 
-// Get jadwal by NPM (mahasiswa)
+// 2. GET JADWAL MAHASISWA BY NPM
 router.get('/mahasiswa/:npm', jadwalController.getJadwalByNPM);
 
-// Get jadwal by dosen name
+// 3. GET JADWAL DOSEN BY NAMA
 router.get('/dosen/:nama', jadwalController.getJadwalByDosen);
 
-// Get all jadwal (admin/overview)
+// 4. GET ALL JADWAL (admin/overview)
 router.get('/all', jadwalController.getAllJadwal);
 
-// Get jadwal by jurusan
+// 5. GET JADWAL BY JURUSAN
 router.get('/jurusan/:jurusan', jadwalController.getJadwalByJurusan);
 
-// Check room availability
+// 6. CHECK ROOM AVAILABILITY
 router.post('/check-availability', jadwalController.cekKetersediaanRuang);
 
-// Clean duplicates
+// 7. CLEAN DUPLICATES
 router.delete('/clean-duplicates', jadwalController.cleanDuplicates);
 
-// Get jadwal by ID
+// 8. GET JADWAL BY ID
 router.get('/:id', jadwalController.getJadwalById);
 
-// Assign mahasiswa to jadwal (for MahasiswaKelas)
+// 9. ASSIGN MAHASISWA TO JADWAL (MahasiswaKelas)
 router.post('/assign-mahasiswa', jadwalController.assignMahasiswaToJadwal);
-
-// Batch assignments
-router.post('/batch-assign', (req, res) => {
-    res.json({ 
-        message: 'Batch assignment endpoint - implement as needed',
-        note: 'Use for bulk MahasiswaKelas assignments'
-    });
-});
 
 module.exports = router;

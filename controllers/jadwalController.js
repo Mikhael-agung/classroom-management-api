@@ -408,6 +408,134 @@ exports.getJadwalByDosen = async (req, res) => {
     }
 };
 
+// CEK KETERSEDIAAN RUANG - UPDATE
+exports.cekKetersediaanRuang = async (req, res) => {
+    try {
+        const { ruang_id, hari, jam_mulai, jam_selesai, tanggal, exclude_jadwal_id } = req.body;
+        
+        console.log('🔍 Cek ketersediaan ruang:', { ruang_id, hari, jam_mulai, jam_selesai });
+        
+        // Validasi input
+        if (!ruang_id || !hari || !jam_mulai || !jam_selesai) {
+            return res.status(400).json({
+                success: false,
+                error: 'ruang_id, hari, jam_mulai, dan jam_selesai harus diisi'
+            });
+        }
+        
+        // Validasi format jam
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeRegex.test(jam_mulai) || !timeRegex.test(jam_selesai)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Format jam tidak valid. Gunakan format HH:MM'
+            });
+        }
+        
+        // Cek apakah ruang ada
+        const ruang = await Ruang.findById(ruang_id);
+        if (!ruang) {
+            return res.status(404).json({
+                success: false,
+                error: `Ruang dengan ID ${ruang_id} tidak ditemukan`
+            });
+        }
+        
+        // CEK KONFLIK JADWAL
+        const { konflikRuang, adaKonflik: konflikJadwal } = 
+            await cekKonflikJadwal(ruang_id, hari, jam_mulai, jam_selesai, null, exclude_jadwal_id);
+        
+        // Jika ada tanggal, cek juga booking
+        let konflikBooking = null;
+        let konflikBookingExists = false;
+        
+        if (tanggal) {
+            const Booking = require('../models/Booking');
+            const query = {
+                ruang_id,
+                tanggal: { $eq: new Date(tanggal) },
+                $or: [
+                    { jam_mulai: { $lt: jam_selesai, $gte: jam_mulai } },
+                    { jam_selesai: { $gt: jam_mulai, $lte: jam_selesai } },
+                    { 
+                        $and: [
+                            { jam_mulai: { $lte: jam_mulai } },
+                            { jam_selesai: { $gte: jam_selesai } }
+                        ]
+                    }
+                ]
+            };
+            
+            if (exclude_jadwal_id) {
+                query._id = { $ne: exclude_jadwal_id };
+            }
+            
+            konflikBooking = await Booking.findOne(query);
+            konflikBookingExists = !!konflikBooking;
+        }
+        
+        const tersedia = !konflikJadwal && !konflikBookingExists;
+        
+        console.log(`✅ Cek ketersediaan: ${tersedia ? 'Tersedia' : 'Terpakai'}`);
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                ruang: {
+                    id: ruang._id,
+                    kode: ruang.kode,
+                    nama: ruang.nama,
+                    kapasitas: ruang.kapasitas,
+                    fasilitas: ruang.fasilitas,
+                    lokasi_gedung: ruang.lokasi_gedung,
+                    lantai: ruang.lantai
+                },
+                request: {
+                    hari,
+                    jam_mulai,
+                    jam_selesai,
+                    tanggal: tanggal || 'N/A'
+                },
+                available: tersedia,
+                conflicts: {
+                    jadwal: konflikJadwal ? {
+                        exists: true,
+                        schedule: {
+                            id: konflikRuang?._id,
+                            mata_kuliah: konflikRuang?.mata_kuliah_id?.nama || 'Unknown',
+                            kelas: konflikRuang?.kelas,
+                            jam: `${konflikRuang?.jam_mulai} - ${konflikRuang?.jam_selesai}`
+                        }
+                    } : { exists: false },
+                    booking: konflikBookingExists ? {
+                        exists: true,
+                        booking: {
+                            id: konflikBooking?._id,
+                            pemohon: konflikBooking?.pemohon,
+                            keperluan: konflikBooking?.keperluan,
+                            jam: `${konflikBooking?.jam_mulai} - ${konflikBooking?.jam_selesai}`,
+                            status: konflikBooking?.status
+                        }
+                    } : { exists: false }
+                },
+                recommendation: tersedia ? '✅ Ruang tersedia untuk digunakan' :
+                    konflikJadwal ? '❌ Ruang sudah terpakai untuk jadwal kuliah' :
+                    '❌ Ruang sudah dibooking untuk acara lain',
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('🔥 Error checking room availability:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Server error',
+            message: error.message 
+        });
+    }
+};
+
+
 // 4. GET ALL JADWAL (untuk admin/overview) - UPDATE
 exports.getAllJadwal = async (req, res) => {
     try {
@@ -752,6 +880,88 @@ exports.assignMahasiswaToJadwal = async (req, res) => {
             success: false, 
             error: 'Server error',
             message: error.message 
+        });
+    }
+};
+
+// 7. CLEAN DUPLICATES (endpoint baru untuk hapus duplikat)
+exports.cleanDuplicates = async (req, res) => {
+    try {
+        console.log('🧹 Starting duplicate cleanup process...');
+        
+        const jumlahDuplikat = await hapusDataDuplikat();
+        
+        if (jumlahDuplikat > 0) {
+            console.log(`✅ Removed ${jumlahDuplikat} duplicate schedules`);
+            res.status(200).json({
+                success: true,
+                message: `✅ Berhasil menghapus ${jumlahDuplikat} data jadwal duplikat`,
+                details: {
+                    duplicates_removed: jumlahDuplikat,
+                    action: 'duplicate_cleanup',
+                    timestamp: new Date().toISOString()
+                }
+            });
+        } else {
+            console.log('✅ No duplicates found');
+            res.status(200).json({
+                success: true,
+                message: '✅ Tidak ditemukan data duplikat',
+                details: {
+                    duplicates_removed: 0,
+                    action: 'duplicate_cleanup',
+                    timestamp: new Date().toISOString()
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('🔥 Error cleaning duplicates:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Server error',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+};
+
+// 8. GET JADWAL BY ID (tambahan opsional)
+exports.getJadwalById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID jadwal tidak valid'
+            });
+        }
+        
+        const jadwal = await Jadwal.findById(id)
+            .populate({
+                path: 'mata_kuliah_id',
+                populate: { path: 'dosen_id' }
+            })
+            .populate('ruang_id');
+        
+        if (!jadwal) {
+            return res.status(404).json({
+                success: false,
+                error: 'Jadwal tidak ditemukan'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            data: jadwal
+        });
+        
+    } catch (error) {
+        console.error('Error getting jadwal by ID:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Server error' 
         });
     }
 };
