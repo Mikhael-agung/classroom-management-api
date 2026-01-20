@@ -2,6 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const morgan = require('morgan');
+
+// Import routes
+const apiRoutes = require('./routes/api');
+
+// Import seeding function
+const { seedDatabase } = require('./data/seedData');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -9,78 +16,83 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
-// Connect to MongoDB
-mongoose.connect(process.env.DATABASE_URL)
-    .then(() => console.log('✅ MongoDB Connected'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+// Database connection
+mongoose.connect(process.env.DATABASE_URL || 'mongodb://localhost:27017/university_db', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Import routes
-const apiRoutes = require('./routes/api');
-
-// Use routes
+// API Routes
 app.use('/api', apiRoutes);
 
-// Home route
-app.get('/', (req, res) => {
+// Health check
+app.get('/health', (req, res) => {
     res.json({
-        message: '🎓 Classroom Management API - Tugas Kuliah',
-        author: 'Your Name',
-        description: 'API untuk sistem manajemen ruang kuliah dengan 5000 data dummy',
-        totalData: {
-            mahasiswa: 5000,
-            dosen: 10,
-            ruang: 100,
-            mataKuliah: 200,
-            jadwal: 500,
-            booking: 100
-        },
-        endpoints: [
-            '=== 7 OPERASI UTAMA ===',
-            '1. POST   /api/jadwal           - Insert jadwal baru (dengan cek konflik)',
-            '2. GET    /api/jadwal/npm/:npm  - Get jadwal mahasiswa by NPM',
-            '3. GET    /api/jadwal/dosen/:nama - Get jadwal dosen by nama',
-            '4. POST   /api/jadwal/cek       - Cek ketersediaan ruang',
-            '5. POST   /api/booking          - Insert booking ruang (dengan cek konflik)',
-            '6. GET    /api/booking/ruang/:id - Get semua booking untuk ruang tertentu',
-            '7. GET    /api/booking/occupancy/:id - Hitung occupancy rate per ruang',
-            '',
-            '=== DATA DUMMY 5000 ===',
-            'GET    /api/mahasiswa/paginated?page=1&limit=50',
-            'GET    /api/mahasiswa/search?prodi=Informatika',
-            'GET    /api/mahasiswa/:npm',
-            '',
-            '=== DATA LAIN ===',
-            'GET    /api/dosen',
-            'GET    /api/ruang',
-            'GET    /api/jadwal/all',
-            'GET    /api/stats',
-            '',
-            '=== SEED DATA ===',
-            'POST   /api/seed               - Info seed data',
-            'npm run seed                   - Generate 5000 data dummy'
-        ],
-        note: 'API ini TANPA LOGIN/AUTH, langsung bisa dipakai di Postman!'
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        uptime: process.uptime()
     });
 });
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ error: 'Endpoint tidak ditemukan' });
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        message: 'University Management System API',
+        version: '2.0.0',
+        documentation: '/api',
+        health: '/health',
+        seeding: {
+            manual: 'POST /api/data/seed',
+            status: 'GET /api/data/seed/status'
+        }
+    });
 });
 
-// Error handler
+// Manual seeding command
+if (process.argv.includes('--seed')) {
+    console.log('🌱 Running database seeding via command line...');
+    seedDatabase().then(() => {
+        console.log('✅ Seeding completed!');
+        process.exit(0);
+    }).catch(error => {
+        console.error('❌ Seeding failed:', error);
+        process.exit(1);
+    });
+}
+
+// Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('🔥 Server error:', err.stack);
+    res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
 });
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`========================================`);
-    console.log(`🚀 SERVER BERJALAN: http://localhost:${PORT}`);
-    console.log(`📚 Database: ${process.env.DATABASE_URL || 'classroom_db'}`);
-    console.log(`🐛 Debug Mode: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🎓 Total Data: 5000+ mahasiswa, 100+ ruang, 200+ mata kuliah`);
-    console.log(`========================================`);
+    console.log('========================================');
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log('========================================');
+    console.log('📚 API Documentation:');
+    console.log(`   📍 Local: http://localhost:${PORT}/api`);
+    console.log('========================================');
+    console.log('🎓 Universitas dengan:');
+    console.log('   👥 4 Fakultas: Teknik, Ekonomi, Hukum, FISIP');
+    console.log('   🎓 8 Jurusan: Informatika, SI, Manajemen, Akuntansi, Ilmu Hukum, Hukum Bisnis, Komunikasi, HI');
+    console.log('   📚 200 Mata Kuliah');
+    console.log('   🏫 100 Ruang Kuliah');
+    console.log('   👨‍🎓 5000 Mahasiswa');
+    console.log('========================================');
+    console.log('🌱 Untuk seeding database:');
+    console.log('   🔸 API: POST /api/data/seed');
+    console.log('   🔸 CLI: npm run seed');
+    console.log('========================================');
 });
