@@ -1,0 +1,1495 @@
+{
+  "info": {
+    "_postman_id": "university-management-api-v3",
+    "name": "University Management API - Complete V3 (Updated Models)",
+    "description": "Complete Postman Collection for University Management System with Updated Models (8 Jurusan, 4 Fakultas, MahasiswaKelas, Conflict Detection)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": {
+      "major": 3,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "item": [
+    {
+      "name": "🔧 SETUP & CONFIG",
+      "item": [
+        {
+          "name": "1. Health Check & API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Verify server is running and get API info"
+          }
+        },
+        {
+          "name": "2. Get All API Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api",
+              "host": ["{{base_url}}"],
+              "path": ["api"]
+            },
+            "description": "Get complete API documentation with all endpoints"
+          }
+        },
+        {
+          "name": "3. Database Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check database connection status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌱 DATABASE SEEDING",
+      "description": "Seed database with 5000 mahasiswa, 200 mata kuliah, etc.",
+      "item": [
+        {
+          "name": "1. Get Sample IDs for Testing",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/samples/ids",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "samples", "ids"]
+            },
+            "description": "Get sample ObjectIDs from all collections"
+          }
+        },
+        {
+          "name": "2. Get Multiple Samples",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/samples/all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "samples", "all"]
+            },
+            "description": "Get multiple samples from all collections"
+          }
+        },
+        {
+          "name": "3. Seed Database with Dummy Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/data/seed",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "seed"]
+            },
+            "description": "Seed database with 5000 mahasiswa, 100 dosen, 200 mata kuliah, etc."
+          }
+        },
+        {
+          "name": "4. Check Seeding Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/seed/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "seed", "status"]
+            },
+            "description": "Check current database record counts"
+          }
+        },
+        {
+          "name": "5. Clear All Data (Danger!)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"confirmation\": \"DELETE_ALL_DATA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/data/clear",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "clear"]
+            },
+            "description": "Clear all data from database (requires confirmation)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 7 OPERASI UTAMA (UPDATED)",
+      "description": "7 Main Operations with updated field names",
+      "item": [
+        {
+          "name": "1. INSERT JADWAL (Cek Konflik Dosen & Ruang) - UPDATED",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester_aktif\": \"Ganjil 2023/2024\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/insert",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "insert"]
+            },
+            "description": "Operation 1: Insert schedule with conflict checking (dosen & ruang) - UPDATED: semester → semester_aktif"
+          }
+        },
+        {
+          "name": "2. GET JADWAL MAHASISWA (by NPM) - UPDATED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/mahasiswa/{{test_npm}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "mahasiswa", "{{test_npm}}"]
+            },
+            "description": "Operation 2: Get student schedule by NPM - Uses MahasiswaKelas model"
+          }
+        },
+        {
+          "name": "3. GET JADWAL DOSEN (by Nama) - UPDATED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/dosen/{{test_dosen}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "dosen", "{{test_dosen}}"]
+            },
+            "description": "Operation 3: Get lecturer schedule by name"
+          }
+        },
+        {
+          "name": "4. CEK KETERSEDIAAN RUANG - UPDATED",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"10:00\",\n  \"jam_selesai\": \"12:00\",\n  \"tanggal\": \"2024-12-01\",\n  \"exclude_jadwal_id\": \"{{sample_jadwal_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/check-availability",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "check-availability"]
+            },
+            "description": "Operation 4: Check room availability for specific time slot"
+          }
+        },
+        {
+          "name": "5. INSERT BOOKING RUANG (Cek Konflik) - UPDATED",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"tanggal\": \"2024-12-10\",\n  \"jam_mulai\": \"09:00\",\n  \"jam_selesai\": \"12:00\",\n  \"pemohon\": \"Dr. Andi Wijaya\",\n  \"keperluan\": \"Seminar Akhir Tahun\",\n  \"jumlah_peserta\": 50,\n  \"kontak\": \"andi@university.edu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/booking",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking"]
+            },
+            "description": "Operation 5: Book room for events/meetings with conflict checking"
+          }
+        },
+        {
+          "name": "6. GET BOOKING RUANG - UPDATED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/ruang/{{sample_ruang_id}}?status=approved&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking", "ruang", "{{sample_ruang_id}}"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "approved"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Operation 6: Get all bookings for specific room"
+          }
+        },
+        {
+          "name": "7. HITUNG OCCUPANCY RATE - UPDATED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/ruang/{{sample_ruang_id}}/occupancy?bulan=12&tahun=2024",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking", "ruang", "{{sample_ruang_id}}", "occupancy"],
+              "query": [
+                {
+                  "key": "bulan",
+                  "value": "12"
+                },
+                {
+                  "key": "tahun",
+                  "value": "2024"
+                }
+              ]
+            },
+            "description": "Operation 7: Calculate room occupancy/utilization rate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🎓 MAHASISWA OPERATIONS (UPDATED)",
+      "description": "Mahasiswa operations with new fakultas and jurusan fields",
+      "item": [
+        {
+          "name": "1. Get All Mahasiswa (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa/paginated?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa", "paginated"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get mahasiswa with pagination - UPDATED: uses fakultas & jurusan"
+          }
+        },
+        {
+          "name": "2. Search Mahasiswa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa/search?fakultas=Teknik&jurusan=Informatika&angkatan=2023&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa", "search"],
+              "query": [
+                {
+                  "key": "fakultas",
+                  "value": "Teknik"
+                },
+                {
+                  "key": "jurusan",
+                  "value": "Informatika"
+                },
+                {
+                  "key": "angkatan",
+                  "value": "2023"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Search mahasiswa with filters - UPDATED: prodi → jurusan, added fakultas"
+          }
+        },
+        {
+          "name": "3. Get Mahasiswa by NPM",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa/npm/{{test_npm}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa", "npm", "{{test_npm}}"]
+            },
+            "description": "Get mahasiswa by NPM - UPDATED: returns fakultas & jurusan"
+          }
+        },
+        {
+          "name": "4. Get Jadwal Mahasiswa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa/{{test_npm}}/jadwal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa", "{{test_npm}}", "jadwal"]
+            },
+            "description": "Get jadwal for specific mahasiswa - Uses MahasiswaKelas"
+          }
+        },
+        {
+          "name": "5. Create New Mahasiswa",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"20241001\",\n  \"nama\": \"Mahasiswa Baru\",\n  \"fakultas\": \"Teknik\",\n  \"jurusan\": \"Informatika\",\n  \"angkatan\": 2024,\n  \"email\": \"mahasiswa.baru@university.edu\",\n  \"no_hp\": \"081234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa"]
+            },
+            "description": "Create new mahasiswa - UPDATED: requires fakultas & jurusan"
+          }
+        },
+        {
+          "name": "6. Get Mahasiswa Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa/stats?groupBy=jurusan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa", "stats"],
+              "query": [
+                {
+                  "key": "groupBy",
+                  "value": "jurusan"
+                }
+              ]
+            },
+            "description": "Get mahasiswa statistics per jurusan/fakultas"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 JADWAL OPERATIONS (UPDATED)",
+      "description": "Jadwal operations with semester_aktif field",
+      "item": [
+        {
+          "name": "1. Get All Jadwal with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/all?hari=Senin&jurusan=Informatika&semester_aktif=Ganjil 2023/2024&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "all"],
+              "query": [
+                {
+                  "key": "hari",
+                  "value": "Senin"
+                },
+                {
+                  "key": "jurusan",
+                  "value": "Informatika"
+                },
+                {
+                  "key": "semester_aktif",
+                  "value": "Ganjil 2023/2024"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all schedules with filters - UPDATED: semester → semester_aktif, prodi → jurusan"
+          }
+        },
+        {
+          "name": "2. Get Jadwal by Jurusan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/jurusan/Informatika?semester_aktif=Ganjil 2023/2024",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "jurusan", "Informatika"],
+              "query": [
+                {
+                  "key": "semester_aktif",
+                  "value": "Ganjil 2023/2024"
+                }
+              ]
+            },
+            "description": "Get jadwal by jurusan - UPDATED: prodi → jurusan"
+          }
+        },
+        {
+          "name": "3. Assign Mahasiswa to Jadwal (MahasiswaKelas)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mahasiswa_id\": \"{{sample_mahasiswa_id}}\",\n  \"jadwal_id\": \"{{sample_jadwal_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/assign-mahasiswa",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "assign-mahasiswa"]
+            },
+            "description": "Assign mahasiswa to jadwal (creates MahasiswaKelas entry) - NEW FEATURE"
+          }
+        },
+        {
+          "name": "4. Clean Duplicate Schedules",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/clean-duplicates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "clean-duplicates"]
+            },
+            "description": "Clean duplicate schedule data"
+          }
+        },
+        {
+          "name": "5. Get Jadwal by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/{{sample_jadwal_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "{{sample_jadwal_id}}"]
+            },
+            "description": "Get jadwal by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 DATA MANAGEMENT (UPDATED)",
+      "description": "Data management with updated models",
+      "item": [
+        {
+          "name": "1. Get All Dosen",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/dosen?fakultas=Teknik&jurusan=Informatika&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "dosen"],
+              "query": [
+                {
+                  "key": "fakultas",
+                  "value": "Teknik"
+                },
+                {
+                  "key": "jurusan",
+                  "value": "Informatika"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all dosen - UPDATED: prodi → jurusan, added fakultas"
+          }
+        },
+        {
+          "name": "2. Get All Ruang",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/ruang?lokasi_gedung=Gedung A&minKapasitas=30&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "ruang"],
+              "query": [
+                {
+                  "key": "lokasi_gedung",
+                  "value": "Gedung A"
+                },
+                {
+                  "key": "minKapasitas",
+                  "value": "30"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all ruang - UPDATED: gedung → lokasi_gedung, capacity 30-50"
+          }
+        },
+        {
+          "name": "3. Get All Mata Kuliah",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/mata-kuliah?fakultas=Teknik&jurusan=Informatika&semester_tipe=Ganjil&semester=1&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "mata-kuliah"],
+              "query": [
+                {
+                  "key": "fakultas",
+                  "value": "Teknik"
+                },
+                {
+                  "key": "jurusan",
+                  "value": "Informatika"
+                },
+                {
+                  "key": "semester_tipe",
+                  "value": "Ganjil"
+                },
+                {
+                  "key": "semester",
+                  "value": "1"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all mata kuliah - UPDATED: prodi → jurusan, added fakultas, semester_tipe"
+          }
+        },
+        {
+          "name": "4. Get Data Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "stats"]
+            },
+            "description": "Get comprehensive data statistics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 STATISTICS & ANALYTICS (UPDATED)",
+      "description": "Statistics with new fields and groupings",
+      "item": [
+        {
+          "name": "1. Get Comprehensive Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stats"]
+            },
+            "description": "Get comprehensive statistics - UPDATED: includes fakultas, jurusan breakdown"
+          }
+        },
+        {
+          "name": "2. Get Dashboard Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stats/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stats", "dashboard"]
+            },
+            "description": "Get real-time dashboard statistics"
+          }
+        },
+        {
+          "name": "3. Get Faculty Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stats/fakultas/Teknik",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stats", "fakultas", "Teknik"]
+            },
+            "description": "Get statistics for specific faculty - NEW FEATURE"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 BOOKING OPERATIONS",
+      "description": "Room booking operations",
+      "item": [
+        {
+          "name": "1. Get Available Rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/available-rooms?tanggal=2024-12-10&jam_mulai=09:00&jam_selesai=12:00&lokasi_gedung=Gedung A&min_kapasitas=30",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking", "available-rooms"],
+              "query": [
+                {
+                  "key": "tanggal",
+                  "value": "2024-12-10"
+                },
+                {
+                  "key": "jam_mulai",
+                  "value": "09:00"
+                },
+                {
+                  "key": "jam_selesai",
+                  "value": "12:00"
+                },
+                {
+                  "key": "lokasi_gedung",
+                  "value": "Gedung A"
+                },
+                {
+                  "key": "min_kapasitas",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Get available rooms for booking - UPDATED: gedung → lokasi_gedung"
+          }
+        },
+        {
+          "name": "2. Get Booking by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/range?start_date=2024-12-01&end_date=2024-12-31&lokasi_gedung=Gedung A&status=approved",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking", "range"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2024-12-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-12-31"
+                },
+                {
+                  "key": "lokasi_gedung",
+                  "value": "Gedung A"
+                },
+                {
+                  "key": "status",
+                  "value": "approved"
+                }
+              ]
+            },
+            "description": "Get bookings by date range - UPDATED: gedung → lokasi_gedung"
+          }
+        },
+        {
+          "name": "3. Get Booking Calendar View",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/calendar?tahun=2024&bulan=12",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking", "calendar"],
+              "query": [
+                {
+                  "key": "tahun",
+                  "value": "2024"
+                },
+                {
+                  "key": "bulan",
+                  "value": "12"
+                }
+              ]
+            },
+            "description": "Get booking calendar view for month"
+          }
+        },
+        {
+          "name": "4. Update Booking Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\",\n  \"alasan\": \"Permohonan disetujui\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/booking/{{sample_booking_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "booking", "{{sample_booking_id}}", "status"]
+            },
+            "description": "Update booking status (pending → approved/rejected)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 TESTING SCENARIOS (UPDATED)",
+      "description": "Updated testing scenarios with new models",
+      "item": [
+        {
+          "name": "Scenario 1: Complete Student Enrollment Flow",
+          "item": [
+            {
+              "name": "1. Create New Mahasiswa",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nim\": \"20241099\",\n  \"nama\": \"John Doe\",\n  \"fakultas\": \"Teknik\",\n  \"jurusan\": \"Informatika\",\n  \"angkatan\": 2024,\n  \"email\": \"john.doe@university.edu\",\n  \"no_hp\": \"081234567899\"\n}"
+                },
+                "url": "{{base_url}}/api/mahasiswa"
+              }
+            },
+            {
+              "name": "2. Find Suitable Jadwal for Jurusan",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/jadwal/jurusan/Informatika?semester_aktif=Ganjil 2023/2024"
+              }
+            },
+            {
+              "name": "3. Assign Mahasiswa to Jadwal (MahasiswaKelas)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mahasiswa_id\": \"{{new_mahasiswa_id}}\",\n  \"jadwal_id\": \"{{selected_jadwal_id}}\"\n}"
+                },
+                "url": "{{base_url}}/api/jadwal/assign-mahasiswa"
+              }
+            },
+            {
+              "name": "4. Verify Student Schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/mahasiswa/20241099/jadwal"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 2: Fakultas & Jurusan Based Queries",
+          "item": [
+            {
+              "name": "1. Get All Mahasiswa in Fakultas Teknik",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/mahasiswa/search?fakultas=Teknik&page=1&limit=10"
+              }
+            },
+            {
+              "name": "2. Get All Dosen in Jurusan Informatika",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/data/dosen?jurusan=Informatika"
+              }
+            },
+            {
+              "name": "3. Get All Mata Kuliah for Fakultas Ekonomi",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/data/mata-kuliah?fakultas=Ekonomi&semester_tipe=Ganjil"
+              }
+            },
+            {
+              "name": "4. Get Faculty Statistics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/stats/fakultas/Teknik"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 3: Semester Ganjil/Genap Testing",
+          "item": [
+            {
+              "name": "1. Get Mata Kuliah for Semester Ganjil",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/data/mata-kuliah?semester_tipe=Ganjil&jurusan=Informatika"
+              }
+            },
+            {
+              "name": "2. Get Mata Kuliah for Semester Genap",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/data/mata-kuliah?semester_tipe=Genap&jurusan=Informatika"
+              }
+            },
+            {
+              "name": "3. Create Jadwal for Semester Ganjil",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{ganjil_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Rabu\",\n  \"jam_mulai\": \"13:00\",\n  \"jam_selesai\": \"15:00\",\n  \"kelas\": \"A\",\n  \"semester_aktif\": \"Ganjil 2023/2024\"\n}"
+                },
+                "url": "{{base_url}}/api/jadwal/insert"
+              }
+            },
+            {
+              "name": "4. Create Jadwal for Semester Genap",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{genap_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id2}}\",\n  \"hari\": \"Kamis\",\n  \"jam_mulai\": \"13:00\",\n  \"jam_selesai\": \"15:00\",\n  \"kelas\": \"B\",\n  \"semester_aktif\": \"Genap 2023/2024\"\n}"
+                },
+                "url": "{{base_url}}/api/jadwal/insert"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🚨 ERROR HANDLING TESTS (UPDATED)",
+      "description": "Error handling with updated field validations",
+      "item": [
+        {
+          "name": "1. Invalid Fakultas/Jurusan Values",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nim\": \"20241111\",\n  \"nama\": \"Test Mahasiswa\",\n  \"fakultas\": \"InvalidFakultas\",\n  \"jurusan\": \"InvalidJurusan\",\n  \"angkatan\": 2024\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mahasiswa",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mahasiswa"]
+            },
+            "description": "Test invalid fakultas/jurusan enum values"
+          }
+        },
+        {
+          "name": "2. Missing Required Fields (New Model)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Test Dosen\",\n  \"email\": \"test@university.edu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/insert",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "insert"]
+            },
+            "description": "Test missing required fields for new model"
+          }
+        },
+        {
+          "name": "3. Invalid Semester Aktif Format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester_aktif\": \"Invalid Semester\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/insert",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jadwal", "insert"]
+            },
+            "description": "Test invalid semester_aktif format"
+          }
+        },
+        {
+          "name": "4. Lokasi Gedung Invalid Value",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/ruang?lokasi_gedung=InvalidGedung",
+              "host": ["{{base_url}}"],
+              "path": ["api", "data", "ruang"],
+              "query": [
+                {
+                  "key": "lokasi_gedung",
+                  "value": "InvalidGedung"
+                }
+              ]
+            },
+            "description": "Test invalid lokasi_gedung filter"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 DEMO PRESENTATION FLOWS",
+      "description": "Complete demo flows for presentation",
+      "item": [
+        {
+          "name": "Demo 1: Complete University System Showcase",
+          "item": [
+            {
+              "name": "1. Start: Show System Overview",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api"
+              }
+            },
+            {
+              "name": "2. Show Database Status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/data/seed/status"
+              }
+            },
+            {
+              "name": "3. Demonstrate Fakultas & Jurusan Structure",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/stats"
+              }
+            },
+            {
+              "name": "4. Show Mahasiswa Distribution",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/mahasiswa/stats?groupBy=fakultas"
+              }
+            },
+            {
+              "name": "5. Demonstrate Jadwal Creation with Conflict Check",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Jumat\",\n  \"jam_mulai\": \"14:00\",\n  \"jam_selesai\": \"16:00\",\n  \"kelas\": \"A\",\n  \"semester_aktif\": \"Ganjil 2023/2024\"\n}"
+                },
+                "url": "{{base_url}}/api/jadwal/insert"
+              }
+            },
+            {
+              "name": "6. Show MahasiswaKelas Assignment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mahasiswa_id\": \"{{sample_mahasiswa_id}}\",\n  \"jadwal_id\": \"{{new_jadwal_id}}\"\n}"
+                },
+                "url": "{{base_url}}/api/jadwal/assign-mahasiswa"
+              }
+            },
+            {
+              "name": "7. Verify Student Schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/mahasiswa/{{sample_npm}}/jadwal"
+              }
+            },
+            {
+              "name": "8. Demonstrate Room Booking",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id2}}\",\n  \"tanggal\": \"2024-12-15\",\n  \"jam_mulai\": \"18:00\",\n  \"jam_selesai\": \"20:00\",\n  \"pemohon\": \"Dr. Budi Santoso\",\n  \"keperluan\": \"Seminar Kelulusan\",\n  \"jumlah_peserta\": 40,\n  \"kontak\": \"budi@university.edu\"\n}"
+                },
+                "url": "{{base_url}}/api/booking"
+              }
+            },
+            {
+              "name": "9. Show Booking Calendar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/booking/calendar?tahun=2024&bulan=12"
+              }
+            },
+            {
+              "name": "10. Final Statistics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/stats/dashboard"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set timestamp for tracking",
+          "const timestamp = new Date().toISOString();",
+          "pm.variables.set(\"timestamp\", timestamp);",
+          "",
+          "// Auto-set Content-Type for POST/PUT requests",
+          "if (pm.request.method === \"POST\" || pm.request.method === \"PUT\") {",
+          "    pm.request.headers.add({",
+          "        key: \"Content-Type\",",
+          "        value: \"application/json\"",
+          "    });",
+          "}",
+          "",
+          "// Generate sample IDs if not set",
+          "if (!pm.variables.get(\"sample_matkul_id\")) {",
+          "    pm.variables.set(\"sample_matkul_id\", \"65f7a1b2c3d4e5f6a7b8c9d0\");",
+          "}",
+          "if (!pm.variables.get(\"sample_ruang_id\")) {",
+          "    pm.variables.set(\"sample_ruang_id\", \"65f7a1b2c3d4e5f6a7b8c9d1\");",
+          "}",
+          "if (!pm.variables.get(\"sample_ruang_id2\")) {",
+          "    pm.variables.set(\"sample_ruang_id2\", \"65f7a1b2c3d4e5f6a7b8c9d2\");",
+          "}",
+          "if (!pm.variables.get(\"sample_jadwal_id\")) {",
+          "    pm.variables.set(\"sample_jadwal_id\", \"65f7a1b2c3d4e5f6a7b8c9d5\");",
+          "}",
+          "if (!pm.variables.get(\"sample_mahasiswa_id\")) {",
+          "    pm.variables.set(\"sample_mahasiswa_id\", \"65f7a1b2c3d4e5f6a7b8c9d6\");",
+          "}",
+          "if (!pm.variables.get(\"sample_booking_id\")) {",
+          "    pm.variables.set(\"sample_booking_id\", \"65f7a1b2c3d4e5f6a7b8c9d7\");",
+          "}",
+          "if (!pm.variables.get(\"sample_dosen_id\")) {",
+          "    pm.variables.set(\"sample_dosen_id\", \"65f7a1b2c3d4e5f6a7b8c9d4\");",
+          "}",
+          "",
+          "// Set test values for new model fields",
+          "pm.variables.set(\"test_npm\", \"20231001\");",
+          "pm.variables.set(\"test_dosen\", \"Andi\");",
+          "pm.variables.set(\"ganjil_matkul_id\", \"65f7a1b2c3d4e5f6a7b8c9d8\");",
+          "pm.variables.set(\"genap_matkul_id\", \"65f7a1b2c3d4e5f6a7b8c9d9\");",
+          "pm.variables.set(\"sample_npm\", \"20231001\");",
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Common response tests",
+          "pm.test(\"Response time is acceptable\", function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+          "});",
+          "",
+          "pm.test(\"Response has valid JSON\", function () {",
+          "    pm.response.to.be.json;",
+          "});",
+          "",
+          "// Success response tests",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    pm.test(\"Successful response structure\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData).to.have.property(\"success\", true);",
+          "        if (jsonData.data) {",
+          "            pm.expect(jsonData.data).to.be.an('object').or.to.be.an('array');",
+          "        }",
+          "        // Check for timestamp",
+          "        pm.expect(jsonData).to.have.property(\"timestamp\");",
+          "    });",
+          "}",
+          "",
+          "// Error response tests",
+          "if ([400, 404, 409, 500].includes(pm.response.code)) {",
+          "    pm.test(\"Error response structure\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.success).to.be.false;",
+          "        pm.expect(jsonData.error).to.be.a('string');",
+          "        // Check for details in conflict responses",
+          "        if (pm.response.code === 409) {",
+          "            pm.expect(jsonData.details).to.exist;",
+          "            pm.expect(jsonData.details).to.be.an('object');",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Test for specific endpoints with new models",
+          "const url = pm.request.url.toString();",
+          "const method = pm.request.method;",
+          "",
+          "// Test for fakultas/jurusan in responses",
+          "if ((url.includes('/mahasiswa') || url.includes('/dosen') || url.includes('/mata-kuliah')) && pm.response.code === 200) {",
+          "    pm.test(\"Response contains new model fields\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        if (jsonData.data && Array.isArray(jsonData.data) && jsonData.data.length > 0) {",
+          "            const item = jsonData.data[0];",
+          "            // Check for new fields",
+          "            if (url.includes('/mahasiswa')) {",
+          "                pm.expect(item).to.have.property('fakultas');",
+          "                pm.expect(item).to.have.property('jurusan');",
+          "            }",
+          "            if (url.includes('/dosen')) {",
+          "                pm.expect(item).to.have.property('fakultas');",
+          "                pm.expect(item).to.have.property('jurusan');",
+          "            }",
+          "            if (url.includes('/mata-kuliah')) {",
+          "                pm.expect(item).to.have.property('fakultas');",
+          "                pm.expect(item).to.have.property('jurusan');",
+          "                pm.expect(item).to.have.property('semester_tipe');",
+          "            }",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Test for jadwal with semester_aktif",
+          "if (url.includes('/jadwal') && pm.response.code === 200) {",
+          "    pm.test(\"Jadwal contains semester_aktif\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        if (jsonData.data && Array.isArray(jsonData.data) && jsonData.data.length > 0) {",
+          "            const item = jsonData.data[0];",
+          "            pm.expect(item).to.have.property('semester_aktif');",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Test for ruang with lokasi_gedung",
+          "if (url.includes('/ruang') && pm.response.code === 200) {",
+          "    pm.test(\"Ruang contains lokasi_gedung\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        if (jsonData.data && Array.isArray(jsonData.data) && jsonData.data.length > 0) {",
+          "            const item = jsonData.data[0];",
+          "            pm.expect(item).to.have.property('lokasi_gedung');",
+          "            pm.expect(item.lokasi_gedung).to.match(/^Gedung [A-D]$/);",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Test for seeding endpoints",
+          "if (url.includes('/seed') && pm.response.code === 202) {",
+          "    pm.test(\"Seeding started successfully\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.message).to.include('started');",
+          "    });",
+          "}",
+          "",
+          "// Test for MahasiswaKelas assignment",
+          "if (url.includes('assign-mahasiswa') && pm.response.code === 201) {",
+          "    pm.test(\"Mahasiswa assigned to jadwal successfully\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.data).to.have.property('mahasiswa');",
+          "        pm.expect(jsonData.data).to.have.property('jadwal');",
+          "        pm.expect(jsonData.data).to.have.property('assignment_id');",
+          "    });",
+          "}",
+          "",
+          "// Test for paginated responses",
+          "if (url.includes('page=') && pm.response.code === 200) {",
+          "    pm.test(\"Enhanced pagination response\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData).to.have.property('pagination');",
+          "        pm.expect(jsonData.pagination).to.have.property('page');",
+          "        pm.expect(jsonData.pagination).to.have.property('limit');",
+          "        pm.expect(jsonData.pagination).to.have.property('total');",
+          "        pm.expect(jsonData.pagination).to.have.property('pages');",
+          "        pm.expect(jsonData).to.have.property('filters');",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "timestamp",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_npm",
+      "value": "20231001",
+      "type": "string"
+    },
+    {
+      "key": "test_dosen",
+      "value": "Andi",
+      "type": "string"
+    },
+    {
+      "key": "sample_matkul_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d0",
+      "type": "string"
+    },
+    {
+      "key": "sample_ruang_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d1",
+      "type": "string"
+    },
+    {
+      "key": "sample_ruang_id2",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d2",
+      "type": "string"
+    },
+    {
+      "key": "sample_jadwal_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d5",
+      "type": "string"
+    },
+    {
+      "key": "sample_mahasiswa_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d6",
+      "type": "string"
+    },
+    {
+      "key": "sample_dosen_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d4",
+      "type": "string"
+    },
+    {
+      "key": "sample_booking_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d7",
+      "type": "string"
+    },
+    {
+      "key": "ganjil_matkul_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d8",
+      "type": "string"
+    },
+    {
+      "key": "genap_matkul_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d9",
+      "type": "string"
+    },
+    {
+      "key": "sample_npm",
+      "value": "20231001",
+      "type": "string"
+    },
+    {
+      "key": "new_mahasiswa_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "selected_jadwal_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "new_jadwal_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": null
+}
