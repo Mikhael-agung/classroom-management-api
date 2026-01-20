@@ -221,6 +221,7 @@ async function generateRuang() {
 }
 
 // ===== GENERATE 200 MATA KULIAH =====
+// ===== GENERATE MATA KULIAH DENGAN DOSEN YANG BENAR =====
 async function generateMataKuliah(dosenList) {
     console.log('🔨 Generating 200 mata kuliah (25 per jurusan)...');
     const matkulList = [];
@@ -229,10 +230,12 @@ async function generateMataKuliah(dosenList) {
     // 8 jurusan × 25 matkul = 200 matkul
     for (const [jurusan, matkulNames] of Object.entries(MATA_KULIAH_PER_JURUSAN)) {
         const fakultas = getFakultasByJurusan(jurusan);
+
+        // Filter dosen untuk jurusan ini
         const dosenJurusan = dosenList.filter(d => d.jurusan === jurusan);
 
         if (dosenJurusan.length === 0) {
-            console.warn(`⚠️  Tidak ada dosen untuk jurusan ${jurusan}, menggunakan dosen dari jurusan lain`);
+            console.warn(`⚠️  Tidak ada dosen untuk jurusan ${jurusan}, akan assign random dosen`);
         }
 
         // Ambil 25 nama matkul untuk jurusan ini
@@ -241,49 +244,53 @@ async function generateMataKuliah(dosenList) {
         for (let i = 0; i < 25; i++) {
             const nama = selectedMatkulNames[i];
 
-            // Semester 1-8 secara merata (25/8 = ~3 matkul per semester)
+            // Semester 1-8 secara merata
             const semester = Math.floor(i / 3) + 1; // 1-8
-
-            // Pastikan semester tidak melebihi 8
             const safeSemester = Math.min(semester, 8);
-
             const semesterTipe = safeSemester % 2 === 1 ? 'Ganjil' : 'Genap';
 
-            // Pilih dosen (jika ada dosen di jurusan ini, jika tidak pilih random)
-            let dosen;
+            // Pilih dosen untuk matkul ini
+            let selectedDosen;
             if (dosenJurusan.length > 0) {
-                dosen = dosenJurusan[i % dosenJurusan.length];
+                // Pilih dosen dari jurusan yang sama (round-robin)
+                selectedDosen = dosenJurusan[i % dosenJurusan.length];
             } else {
-                dosen = dosenList[Math.floor(Math.random() * dosenList.length)];
+                // Pilih random dosen jika tidak ada di jurusan
+                selectedDosen = dosenList[Math.floor(Math.random() * dosenList.length)];
             }
 
             matkulList.push({
                 kode: generateKodeMatkul(jurusan, matkulCounter),
                 nama: nama,
                 sks: faker.helpers.arrayElement([2, 3, 4]),
-                dosen_id: null, // Akan diisi setelah dosen dibuat
+                dosen_id: selectedDosen._id, // INI DOSEN_ID YANG BENAR!
                 jurusan: jurusan,
                 fakultas: fakultas,
                 semester_tipe: semesterTipe,
-                semester: safeSemester, // PASTIKAN TIDAK LEBIH DARI 8
-                deskripsi: `Mata kuliah ${nama} untuk jurusan ${jurusan}, semester ${safeSemester} (${semesterTipe})`
+                semester: safeSemester,
+                deskripsi: `Mata kuliah ${nama} untuk jurusan ${jurusan}, semester ${safeSemester} (${semesterTipe}) - Dosen: ${selectedDosen.nama}`
             });
 
             matkulCounter++;
+        }
+
+        console.log(`   ✅ Generated 25 mata kuliah untuk jurusan ${jurusan}`);
+        console.log(`      Dosen available: ${dosenJurusan.length}`);
+        if (dosenJurusan.length > 0) {
+            console.log(`      Sample dosen: ${dosenJurusan[0].nama} (${dosenJurusan[0].kode_dosen})`);
         }
     }
 
     console.log(`✅ Generated ${matkulList.length} mata kuliah`);
 
-    // Validasi: Pastikan tidak ada semester > 8
-    const invalidMatkul = matkulList.filter(mk => mk.semester > 8);
-    if (invalidMatkul.length > 0) {
-        console.error(`❌ Ditemukan ${invalidMatkul.length} mata kuliah dengan semester > 8`);
-        invalidMatkul.forEach(mk => {
-            console.error(`   - ${mk.nama}: semester ${mk.semester}`);
+    // Validasi: Pastikan semua mata kuliah punya dosen_id
+    const matkulTanpaDosen = matkulList.filter(mk => !mk.dosen_id);
+    if (matkulTanpaDosen.length > 0) {
+        console.error(`❌ ERROR: ${matkulTanpaDosen.length} mata kuliah tanpa dosen_id!`);
+        matkulTanpaDosen.forEach((mk, idx) => {
+            console.error(`   ${idx + 1}. ${mk.nama} (${mk.jurusan}) - NO DOSEN`);
         });
-        // Fix: set ke 8
-        invalidMatkul.forEach(mk => mk.semester = 8);
+        throw new Error('Mata kuliah tanpa dosen assignment');
     }
 
     return matkulList;
@@ -530,7 +537,7 @@ async function seedDatabase() {
         console.log('========================================');
 
         // Connect to MongoDB
-        await mongoose.connect(process.env.DATABASE_URL || 'mongodb://localhost:27017/university_db');
+        await mongoose.connect(process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/university_db');
         console.log('✅ Connected to MongoDB');
 
         // Clear existing data
@@ -544,25 +551,52 @@ async function seedDatabase() {
         await Ruang.deleteMany({});
         console.log('✅ Cleared existing data');
 
-        // Generate and insert data
-        // 1. Dosen
+        // ========== URUTAN SEEDING ==========
+
+        // 1. GENERATE & INSERT DOSEN
+        console.log('\n--- STEP 1: DOSEN ---');
         const dosenData = await generateDosen();
+        console.log(`📥 Inserting ${dosenData.length} dosen...`);
         const dosen = await Dosen.insertMany(dosenData);
         console.log(`📥 Inserted ${dosen.length} dosen`);
 
-        // 2. Ruang
+        // Log distribusi dosen per jurusan
+        console.log('📊 Distribusi dosen per jurusan:');
+        const distribusiDosen = {};
+        dosen.forEach(d => {
+            distribusiDosen[d.jurusan] = (distribusiDosen[d.jurusan] || 0) + 1;
+        });
+        Object.entries(distribusiDosen).forEach(([jurusan, count]) => {
+            console.log(`   ${jurusan}: ${count} dosen`);
+        });
+
+        // 2. GENERATE & INSERT RUANG
+        console.log('\n--- STEP 2: RUANG ---');
         const ruangData = await generateRuang();
+        console.log(`📥 Inserting ${ruangData.length} ruang...`);
         const ruang = await Ruang.insertMany(ruangData);
         console.log(`📥 Inserted ${ruang.length} ruang`);
 
-        // 3. Mata Kuliah
+        // 3. GENERATE & INSERT MATA KULIAH (dengan dosen_id yang SUDAH ADA)
+        console.log('\n--- STEP 3: MATA KULIAH ---');
+        console.log('   NOTE: Dosen sudah di-insert, memiliki _id valid');
         const mataKuliahData = await generateMataKuliah(dosen);
+        console.log(`📥 Inserting ${mataKuliahData.length} mata kuliah...`);
         const mataKuliah = await MataKuliah.insertMany(mataKuliahData);
         console.log(`📥 Inserted ${mataKuliah.length} mata kuliah`);
 
-        // 4. Mahasiswa (in batches)
+        // Validasi: Cek beberapa mata kuliah punya dosen_id
+        console.log('🔍 Validating mata kuliah assignments...');
+        const sampleMatkul = await MataKuliah.find().limit(5).populate('dosen_id', 'nama kode_dosen jurusan');
+        sampleMatkul.forEach((mk, idx) => {
+            console.log(`   ${idx + 1}. ${mk.kode} - ${mk.nama}`);
+            console.log(`      Dosen: ${mk.dosen_id ? mk.dosen_id.nama : 'NULL'} (${mk.dosen_id ? mk.dosen_id.jurusan : 'N/A'})`);
+        });
+
+        // 4. GENERATE & INSERT MAHASISWA
+        console.log('\n--- STEP 4: MAHASISWA ---');
         const mahasiswaData = await generateMahasiswa();
-        console.log('⏳ Inserting 5000 mahasiswa...');
+        console.log(`⏳ Inserting ${mahasiswaData.length} mahasiswa...`);
         const batchSize = 500;
         for (let i = 0; i < mahasiswaData.length; i += batchSize) {
             const batch = mahasiswaData.slice(i, i + batchSize);
@@ -572,68 +606,99 @@ async function seedDatabase() {
         const mahasiswa = await Mahasiswa.find();
         console.log(`📥 Inserted total ${mahasiswa.length} mahasiswa`);
 
-        // 5. Jadwal
+        // 5. GENERATE & INSERT JADWAL
+        console.log('\n--- STEP 5: JADWAL ---');
+        console.log('   Generating jadwal dengan referensi valid...');
         const jadwalData = await generateJadwal(mataKuliah, ruang, dosen);
+
+        if (jadwalData.length === 0) {
+            console.error('❌ ERROR: Tidak ada jadwal yang di-generate!');
+            throw new Error('Jadwal generation failed');
+        }
+
+        console.log(`📥 Inserting ${jadwalData.length} jadwal...`);
         const jadwal = await Jadwal.insertMany(jadwalData);
         console.log(`📥 Inserted ${jadwal.length} jadwal`);
 
-        // 6. Mahasiswa Kelas
-        const mahasiswaKelasData = await generateMahasiswaKelas(mahasiswa, jadwal, mataKuliah);
-        const mahasiswaKelas = await MahasiswaKelas.insertMany(mahasiswaKelasData);
-        console.log(`📥 Inserted ${mahasiswaKelas.length} mahasiswa-kelas assignments`);
+        // Validasi jadwal
+        console.log('🔍 Validating jadwal assignments...');
+        const sampleJadwal = await Jadwal.find()
+            .limit(3)
+            .populate({
+                path: 'mata_kuliah_id',
+                select: 'nama kode dosen_id',
+                populate: {
+                    path: 'dosen_id',
+                    select: 'nama kode_dosen'
+                }
+            })
+            .populate('ruang_id', 'nama kode');
 
-        // 7. Booking
+        sampleJadwal.forEach((j, idx) => {
+            console.log(`   ${idx + 1}. ${j.mata_kuliah_id?.nama || 'Unknown'} (${j.hari} ${j.jam_mulai}-${j.jam_selesai})`);
+            console.log(`      Ruang: ${j.ruang_id?.nama || 'Unknown'}`);
+            console.log(`      Dosen: ${j.mata_kuliah_id?.dosen_id?.nama || 'NULL'}`);
+        });
+
+        // 6. GENERATE & INSERT MAHASISWA KELAS
+        console.log('\n--- STEP 6: MAHASISWA KELAS ---');
+        const mahasiswaKelasData = await generateMahasiswaKelas(mahasiswa, jadwal, mataKuliah);
+
+        if (mahasiswaKelasData.length > 0) {
+            console.log(`📥 Inserting ${mahasiswaKelasData.length} mahasiswa-kelas assignments...`);
+            const mahasiswaKelas = await MahasiswaKelas.insertMany(mahasiswaKelasData);
+            console.log(`📥 Inserted ${mahasiswaKelas.length} mahasiswa-kelas assignments`);
+        } else {
+            console.warn('⚠️  Tidak ada MahasiswaKelas yang di-generate!');
+        }
+
+        // 7. GENERATE & INSERT BOOKING
+        console.log('\n--- STEP 7: BOOKING ---');
         const bookingData = await generateBooking(ruang, dosen);
+        console.log(`📥 Inserting ${bookingData.length} booking...`);
         const booking = await Booking.insertMany(bookingData);
         console.log(`📥 Inserted ${booking.length} booking`);
 
-        // Summary
+        // FINAL SUMMARY
         console.log('\n========================================');
         console.log('🎉 SEEDING COMPLETED SUCCESSFULLY!');
         console.log('========================================');
-        console.log('📊 SUMMARY:');
-        console.log(`  👨‍🏫 Dosen: ${dosen.length} records`);
-        console.log(`  🏫 Ruang: ${ruang.length} records (${GEDUNG.join(', ')})`);
-        console.log(`  📚 Mata Kuliah: ${mataKuliah.length} records (25 per jurusan)`);
-        console.log(`  👨‍🎓 Mahasiswa: ${mahasiswa.length} records (625 per jurusan)`);
-        console.log(`  📅 Jadwal: ${jadwal.length} records (dengan conflict checking)`);
-        console.log(`  👥 Mahasiswa Kelas: ${mahasiswaKelas.length} assignments (5-7 per mahasiswa)`);
-        console.log(`  📋 Booking: ${booking.length} records`);
-        console.log('\n  🏛️  Fakultas:', FAKULTAS.join(', '));
-        console.log('  🎓 Jurusan:', Object.keys(MATA_KULIAH_PER_JURUSAN).join(', '));
-        console.log('  📅 Semester:', SEMESTER_GANJIL.join(', '), '(Ganjil) |', SEMESTER_GENAP.join(', '), '(Genap)');
-        console.log('========================================');
+        console.log('📊 FINAL DATABASE STATUS:');
 
-        return {
-            dosen: dosen.length,
-            ruang: ruang.length,
-            mataKuliah: mataKuliah.length,
-            mahasiswa: mahasiswa.length,
-            jadwal: jadwal.length,
-            mahasiswaKelas: mahasiswaKelas.length,
-            booking: booking.length
+        const finalCounts = {
+            dosen: await Dosen.countDocuments(),
+            ruang: await Ruang.countDocuments(),
+            mataKuliah: await MataKuliah.countDocuments(),
+            mahasiswa: await Mahasiswa.countDocuments(),
+            jadwal: await Jadwal.countDocuments(),
+            mahasiswaKelas: await MahasiswaKelas.countDocuments(),
+            booking: await Booking.countDocuments()
         };
 
+        console.log(`  👨‍🏫 Dosen: ${finalCounts.dosen} records`);
+        console.log(`  🏫 Ruang: ${finalCounts.ruang} records`);
+        console.log(`  📚 Mata Kuliah: ${finalCounts.mataKuliah} records`);
+        console.log(`  👨‍🎓 Mahasiswa: ${finalCounts.mahasiswa} records`);
+        console.log(`  📅 Jadwal: ${finalCounts.jadwal} records`);
+        console.log(`  👥 Mahasiswa Kelas: ${finalCounts.mahasiswaKelas} assignments`);
+        console.log(`  📋 Booking: ${finalCounts.booking} records`);
+
+        // Cek mata kuliah tanpa dosen
+        const matkulNoDosen = await MataKuliah.countDocuments({ dosen_id: null });
+        if (matkulNoDosen > 0) {
+            console.warn(`⚠️  PERINGATAN: ${matkulNoDosen} mata kuliah tanpa dosen assignment!`);
+        } else {
+            console.log('✅ SEMUA mata kuliah memiliki dosen assignment!');
+        }
+
+        return finalCounts;
+
     } catch (error) {
-        console.error('❌ Error during seeding:', error);
+        console.error('\n❌ ERROR during seeding:', error.message);
         console.error('Stack trace:', error.stack);
         throw error;
     } finally {
         await mongoose.disconnect();
         console.log('🔌 Disconnected from MongoDB');
     }
-}
-
-// Export for use in controller
-module.exports = { seedDatabase };
-
-// Run if called directly
-if (require.main === module) {
-    seedDatabase().then(() => {
-        console.log('🚀 Seeding completed!');
-        process.exit(0);
-    }).catch(error => {
-        console.error('💥 Seeding failed:', error);
-        process.exit(1);
-    });
 }
