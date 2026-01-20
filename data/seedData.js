@@ -702,3 +702,5 @@ async function seedDatabase() {
         console.log('🔌 Disconnected from MongoDB');
     }
 }
+
+module.exports = { seedDatabase };
