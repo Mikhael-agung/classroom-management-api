@@ -86,3 +86,47 @@ exports.getMataKuliah = async (req, res) => {
         });
     }
 };
+
+// ./controllers/dataController.js
+exports.getSampleIds = async (req, res) => {
+    try {
+        // Get one sample from each collection
+        const matkul = await MataKuliah.findOne().select('_id nama dosen_id');
+        const ruang = await Ruang.findOne().select('_id kode nama');
+        const dosen = await Dosen.findOne().select('_id kode_dosen nama');
+        const jadwal = await Jadwal.findOne().select('_id hari jam_mulai');
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                mata_kuliah: matkul,
+                ruang: ruang,
+                dosen: dosen,
+                jadwal: jadwal
+            },
+            instructions: "Use these IDs for testing API endpoints"
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+exports.getSamples = async (req, res) => {
+    try {
+        // Get multiple samples
+        const matkulList = await MataKuliah.find().limit(5).select('_id nama dosen_id');
+        const ruangList = await Ruang.find().limit(5).select('_id kode nama kapasitas');
+        const dosenList = await Dosen.find().limit(5).select('_id kode_dosen nama prodi');
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                mata_kuliah: matkulList,
+                ruang: ruangList,
+                dosen: dosenList
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};

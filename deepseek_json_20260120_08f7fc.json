@@ -1,0 +1,1160 @@
+{
+  "info": {
+    "_postman_id": "classroom-api-complete-v2",
+    "name": "Classroom Management API - Complete V2",
+    "description": "Complete Postman Collection for Classroom Management System with Updated Duplicate Prevention and Enhanced Error Handling",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": {
+      "major": 2,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "item": [
+    {
+      "name": "🔧 SETUP & CONFIG",
+      "item": [
+        {
+          "name": "1. Environment Setup",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [""]
+            },
+            "description": "First test to verify server is running"
+          }
+        },
+        {
+          "name": "2. Get Sample IDs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/sample-ids",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "data",
+                "sample-ids"
+              ]
+            },
+            "description": "Get sample ObjectIDs for testing"
+          }
+        },
+        {
+          "name": "3. Clean Duplicate Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/clean-duplicates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal",
+                "clean-duplicates"
+              ]
+            },
+            "description": "Clean duplicate schedule data (NEW FEATURE)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 7 OPERASI UTAMA",
+      "description": "7 Main Operations according to assignment requirements",
+      "item": [
+        {
+          "name": "1. INSERT JADWAL (Cek Konflik Dosen & Ruang)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal"
+              ]
+            },
+            "description": "Operation 1: Insert new class schedule with conflict checking (INCLUDES DOSEN CONFLICT CHECK)"
+          }
+        },
+        {
+          "name": "2. GET JADWAL MAHASISWA (by NPM)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/npm/{{test_npm}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal",
+                "npm",
+                "{{test_npm}}"
+              ]
+            },
+            "description": "Operation 2: Get student schedule by NPM"
+          }
+        },
+        {
+          "name": "3. GET JADWAL DOSEN (by Nama)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/dosen/{{test_dosen}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal",
+                "dosen",
+                "{{test_dosen}}"
+              ]
+            },
+            "description": "Operation 3: Get lecturer schedule by name"
+          }
+        },
+        {
+          "name": "4. CEK KETERSEDIAAN RUANG",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"10:00\",\n  \"jam_selesai\": \"12:00\",\n  \"tanggal\": \"2024-12-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/cek",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal",
+                "cek"
+              ]
+            },
+            "description": "Operation 4: Check room availability for specific time slot"
+          }
+        },
+        {
+          "name": "5. INSERT BOOKING RUANG (Cek Konflik)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"tanggal\": \"2024-12-10\",\n  \"jam_mulai\": \"09:00\",\n  \"jam_selesai\": \"12:00\",\n  \"pemohon\": \"Dr. Andi Wijaya\",\n  \"keperluan\": \"Seminar Akhir Tahun\",\n  \"jumlah_peserta\": 50,\n  \"kontak\": \"andi@university.edu\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/booking",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "description": "Operation 5: Book room for events/meetings with conflict checking"
+          }
+        },
+        {
+          "name": "6. GET BOOKING RUANG",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/ruang/{{test_room}}?status=approved&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                "ruang",
+                "{{test_room}}"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "approved"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Operation 6: Get all bookings for specific room"
+          }
+        },
+        {
+          "name": "7. HITUNG OCCUPANCY RATE",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/booking/occupancy/{{test_room}}?bulan=12&tahun=2024&tipe=bulanan",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                "occupancy",
+                "{{test_room}}"
+              ],
+              "query": [
+                {
+                  "key": "bulan",
+                  "value": "12"
+                },
+                {
+                  "key": "tahun",
+                  "value": "2024"
+                },
+                {
+                  "key": "tipe",
+                  "value": "bulanan"
+                }
+              ]
+            },
+            "description": "Operation 7: Calculate room occupancy/utilization rate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 UPDATED ENDPOINTS",
+      "description": "Endpoints with updated request/response formats",
+      "item": [
+        {
+          "name": "POST Insert Jadwal - With Dosen Conflict",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal"
+              ]
+            },
+            "description": "Now checks for BOTH room and lecturer conflicts"
+          }
+        },
+        {
+          "name": "GET All Jadwal with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/all?hari=Senin&dosen=Andi&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "hari",
+                  "value": "Senin"
+                },
+                {
+                  "key": "dosen",
+                  "value": "Andi"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all schedules with filtering by day, lecturer, etc."
+          }
+        },
+        {
+          "name": "POST Cek Ketersediaan Ruang - Enhanced",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"tanggal\": \"2024-12-01\",\n  \"exclude_jadwal_id\": \"{{sample_jadwal_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal/cek",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal",
+                "cek"
+              ]
+            },
+            "description": "Enhanced availability check with exclude_jadwal_id option"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 TESTING SCENARIOS - UPDATED",
+      "description": "Updated testing scenarios with new conflict features",
+      "item": [
+        {
+          "name": "Scenario 1: Dosen Conflict Test (NEW)",
+          "item": [
+            {
+              "name": "1. Get Sample Matkul IDs for Same Dosen",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/mata-kuliah/dosen/{{test_dosen_id}}"
+                }
+              }
+            },
+            {
+              "name": "2. Insert First Schedule for Dosen",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{matkul1_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Rabu\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "3. Try Conflict Schedule - Same Dosen (Should Fail)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{matkul2_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id2}}\",\n  \"hari\": \"Rabu\",\n  \"jam_mulai\": \"09:00\",\n  \"jam_selesai\": \"11:00\",\n  \"kelas\": \"B\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "4. Check Dosen Schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/dosen/{{test_dosen}}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 2: Clean Duplicates Workflow",
+          "item": [
+            {
+              "name": "1. Create Duplicate Schedules",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Kamis\",\n  \"jam_mulai\": \"13:00\",\n  \"jam_selesai\": \"15:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "2. Try Same Schedule Again (Might Succeed if DB allows)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Kamis\",\n  \"jam_mulai\": \"13:00\",\n  \"jam_selesai\": \"15:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "3. Run Clean Duplicates",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/clean-duplicates"
+                }
+              }
+            },
+            {
+              "name": "4. Verify Cleanup",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/all?hari=Kamis&limit=10"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 3: Complete Conflict Prevention",
+          "item": [
+            {
+              "name": "1. Check Room Availability",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Jumat\",\n  \"jam_mulai\": \"10:00\",\n  \"jam_selesai\": \"12:00\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/cek"
+                }
+              }
+            },
+            {
+              "name": "2. Insert Schedule if Available",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Jumat\",\n  \"jam_mulai\": \"10:00\",\n  \"jam_selesai\": \"12:00\",\n  \"kelas\": \"C\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "3. Try Same Dosen Different Time",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id2}}\",\n  \"hari\": \"Jumat\",\n  \"jam_mulai\": \"13:00\",\n  \"jam_selesai\": \"15:00\",\n  \"kelas\": \"D\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "4. Try Different Dosen Same Time",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id2}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Jumat\",\n  \"jam_mulai\": \"10:00\",\n  \"jam_selesai\": \"12:00\",\n  \"kelas\": \"E\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 DATA MANAGEMENT - UPDATED",
+      "item": [
+        {
+          "name": "GET - All Mata Kuliah with Dosen",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mata-kuliah?prodi=Informatika&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mata-kuliah"
+              ],
+              "query": [
+                {
+                  "key": "prodi",
+                  "value": "Informatika"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all courses with populated dosen data"
+          }
+        },
+        {
+          "name": "GET - Mata Kuliah by Dosen ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/mata-kuliah/dosen/{{test_dosen_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "mata-kuliah",
+                "dosen",
+                "{{test_dosen_id}}"
+              ]
+            },
+            "description": "Get courses taught by specific lecturer (for conflict testing)"
+          }
+        },
+        {
+          "name": "GET - All Ruang with Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ruang?page=1&limit=10&sortBy=gedung",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ruang"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "gedung"
+                }
+              ]
+            },
+            "description": "Get all rooms with complete details"
+          }
+        },
+        {
+          "name": "GET - Sample Data for Testing",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/data/samples",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "data",
+                "samples"
+              ]
+            },
+            "description": "Get sample ObjectIDs for all collections (matkul, ruang, dosen, jadwal)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚨 ERROR HANDLING TESTS - UPDATED",
+      "item": [
+        {
+          "name": "POST - Dosen Conflict Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal"
+              ]
+            },
+            "description": "Test new dosen conflict error response (409 Conflict)"
+          }
+        },
+        {
+          "name": "POST - Invalid ObjectID Format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"invalid-id\",\n  \"ruang_id\": \"not-objectid\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal"
+              ]
+            },
+            "description": "Test validation for invalid ObjectID format"
+          }
+        },
+        {
+          "name": "POST - Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal"
+              ]
+            },
+            "description": "Test error when missing required fields"
+          }
+        },
+        {
+          "name": "POST - Invalid Time Format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"25:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jadwal",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jadwal"
+              ]
+            },
+            "description": "Test invalid time format validation"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 DEMO PRESENTATION FLOWS - UPDATED",
+      "description": "Updated demo flows with new features",
+      "item": [
+        {
+          "name": "Demo Flow: Duplicate Prevention Showcase",
+          "item": [
+            {
+              "name": "1. Start - Show Current State",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/all?limit=5"
+                }
+              }
+            },
+            {
+              "name": "2. Demonstrate Dosen Conflict",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/cek"
+                }
+              }
+            },
+            {
+              "name": "3. Try Create Conflict Schedule",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id}}\",\n  \"hari\": \"Senin\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"B\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "4. Show Error Response Details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/dosen/{{test_dosen}}"
+                }
+              }
+            },
+            {
+              "name": "5. Demonstrate Clean Duplicates Feature",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/clean-duplicates"
+                }
+              }
+            },
+            {
+              "name": "6. Show After Cleanup",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal/all?limit=5"
+                }
+              }
+            },
+            {
+              "name": "7. Create Valid Schedule",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mata_kuliah_id\": \"{{sample_matkul_id}}\",\n  \"ruang_id\": \"{{sample_ruang_id2}}\",\n  \"hari\": \"Selasa\",\n  \"jam_mulai\": \"08:00\",\n  \"jam_selesai\": \"10:00\",\n  \"kelas\": \"A\",\n  \"semester\": \"Ganjil 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/jadwal"
+                }
+              }
+            },
+            {
+              "name": "8. Final Overview",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/stats"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set timestamp for tracking",
+          "const timestamp = new Date().toISOString();",
+          "pm.variables.set(\"timestamp\", timestamp);",
+          "",
+          "// Auto-set Content-Type for POST/PUT requests",
+          "if (pm.request.method === \"POST\" || pm.request.method === \"PUT\") {",
+          "    pm.request.headers.add({",
+          "        key: \"Content-Type\",",
+          "        value: \"application/json\"",
+          "    });",
+          "}",
+          "",
+          "// Generate sample ObjectIDs if needed",
+          "if (!pm.variables.get(\"sample_matkul_id\")) {",
+          "    // This would be replaced with actual ID from /api/data/sample-ids",
+          "    pm.variables.set(\"sample_matkul_id\", \"65f7a1b2c3d4e5f6a7b8c9d0\");",
+          "}",
+          "if (!pm.variables.get(\"sample_ruang_id\")) {",
+          "    pm.variables.set(\"sample_ruang_id\", \"65f7a1b2c3d4e5f6a7b8c9d1\");",
+          "}",
+          "if (!pm.variables.get(\"sample_ruang_id2\")) {",
+          "    pm.variables.set(\"sample_ruang_id2\", \"65f7a1b2c3d4e5f6a7b8c9d2\");",
+          "}",
+          "if (!pm.variables.get(\"sample_matkul_id2\")) {",
+          "    pm.variables.set(\"sample_matkul_id2\", \"65f7a1b2c3d4e5f6a7b8c9d3\");",
+          "}",
+          "if (!pm.variables.get(\"sample_dosen_id\")) {",
+          "    pm.variables.set(\"sample_dosen_id\", \"65f7a1b2c3d4e5f6a7b8c9d4\");",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Common response tests",
+          "pm.test(\"Response time is acceptable\", function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+          "});",
+          "",
+          "pm.test(\"Response has valid JSON\", function () {",
+          "    pm.response.to.be.json;",
+          "});",
+          "",
+          "// Success response tests",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    pm.test(\"Successful response structure\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData).to.have.property(\"success\", true);",
+          "        if (jsonData.data) {",
+          "            pm.expect(jsonData.data).to.be.an('object').or.to.be.an('array');",
+          "        }",
+          "        // Check for timestamp in new format",
+          "        pm.expect(jsonData).to.have.property(\"timestamp\");",
+          "    });",
+          "}",
+          "",
+          "// Error response tests (including new 409 Conflict)",
+          "if ([400, 404, 409, 500].includes(pm.response.code)) {",
+          "    pm.test(\"Error response structure\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.success).to.be.false;",
+          "        pm.expect(jsonData.error).to.be.a('string');",
+          "        // Check for details in conflict responses",
+          "        if (pm.response.code === 409) {",
+          "            pm.expect(jsonData.details).to.exist;",
+          "            pm.expect(jsonData.details).to.be.an('object');",
+          "        }",
+          "    });",
+          "}",
+          "",
+          "// Specific tests for new features",
+          "const url = pm.request.url.toString();",
+          "",
+          "// Test for clean-duplicates endpoint",
+          "if (url.includes('clean-duplicates') && pm.response.code === 200) {",
+          "    pm.test(\"Clean duplicates successful\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.message).to.include(\"duplikat\");",
+          "        pm.expect(jsonData.details).to.have.property(\"duplicates_removed\");",
+          "        pm.expect(jsonData.details.duplicates_removed).to.be.a('number');",
+          "    });",
+          "}",
+          "",
+          "// Test for jadwal insert with conflict checking",
+          "if (url.includes('/api/jadwal') && pm.request.method === 'POST') {",
+          "    if (pm.response.code === 201) {",
+          "        pm.test(\"Jadwal created successfully with new format\", function () {",
+          "            const jsonData = pm.response.json();",
+          "            pm.expect(jsonData.data).to.have.property(\"id\");",
+          "            pm.expect(jsonData.data).to.have.property(\"dosen\");",
+          "            pm.expect(jsonData.data).to.have.property(\"ruang\");",
+          "        });",
+          "    } else if (pm.response.code === 409) {",
+          "        pm.test(\"Conflict error properly formatted\", function () {",
+          "            const jsonData = pm.response.json();",
+          "            pm.expect(jsonData.error).to.include.oneOf([\"Ruang\", \"Dosen\"]);",
+          "            pm.expect(jsonData.details).to.have.property(\"ruang\").or.have.property(\"dosen\");",
+          "        });",
+          "    }",
+          "}",
+          "",
+          "// Test for room availability check",
+          "if (url.includes('/cek') && pm.response.code === 200) {",
+          "    pm.test(\"Availability check response structure\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.data).to.have.property(\"available\");",
+          "        pm.expect(jsonData.data.available).to.be.a('boolean');",
+          "        pm.expect(jsonData.data).to.have.property(\"conflicts\");",
+          "        pm.expect(jsonData.data.conflicts).to.have.property(\"jadwal\");",
+          "        pm.expect(jsonData.data.conflicts).to.have.property(\"booking\");",
+          "    });",
+          "}",
+          "",
+          "// Test for paginated responses",
+          "if (url.includes('page=') && pm.response.code === 200) {",
+          "    pm.test(\"Enhanced pagination response\", function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData.pagination).to.have.property(\"page\");",
+          "        pm.expect(jsonData.pagination).to.have.property(\"limit\");",
+          "        pm.expect(jsonData.pagination).to.have.property(\"total\");",
+          "        pm.expect(jsonData.pagination).to.have.property(\"pages\");",
+          "        pm.expect(jsonData).to.have.property(\"filters\");",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "timestamp",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_npm",
+      "value": "20230001",
+      "type": "string"
+    },
+    {
+      "key": "test_room",
+      "value": "A01",
+      "type": "string"
+    },
+    {
+      "key": "test_dosen",
+      "value": "Andi",
+      "type": "string"
+    },
+    {
+      "key": "sample_matkul_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d0",
+      "type": "string"
+    },
+    {
+      "key": "sample_matkul_id2",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d3",
+      "type": "string"
+    },
+    {
+      "key": "sample_ruang_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d1",
+      "type": "string"
+    },
+    {
+      "key": "sample_ruang_id2",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d2",
+      "type": "string"
+    },
+    {
+      "key": "sample_dosen_id",
+      "value": "65f7a1b2c3d4e5f6a7b8c9d4",
+      "type": "string"
+    },
+    {
+      "key": "matkul1_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "matkul2_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": null
+}
