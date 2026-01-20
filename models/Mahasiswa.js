@@ -12,11 +12,17 @@ const MahasiswaSchema = new mongoose.Schema({
         required: true,
         index: true
     },
-    nama_lengkap: String,
-    prodi: {
+    fakultas: {
         type: String,
         required: true,
-        enum: ['Informatika', 'Sistem Informasi', 'Teknik Komputer'],
+        enum: ['Teknik', 'Ekonomi', 'Hukum', 'FISIP'],
+        index: true
+    },
+    jurusan: {
+        type: String,
+        required: true,
+        enum: ['Informatika', 'Sistem Informasi', 'Manajemen', 'Akuntansi',
+            'Ilmu Hukum', 'Hukum Bisnis', 'Komunikasi', 'Hubungan Internasional'],
         index: true
     },
     angkatan: {
@@ -24,17 +30,16 @@ const MahasiswaSchema = new mongoose.Schema({
         required: true,
         index: true
     },
-    email: String,
+    email: {
+        type: String,
+        required: true
+    },
     no_hp: String,
     status: {
         type: String,
         enum: ['active', 'non-active', 'alumni'],
         default: 'active'
-    },
-    kelas_ids: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Jadwal'
-    }]
+    }
 }, {
     timestamps: true
 });

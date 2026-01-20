@@ -13,17 +13,39 @@ const MataKuliahSchema = new mongoose.Schema({
     },
     sks: {
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        max: 6
     },
     dosen_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Dosen'
     },
-    prodi: {
+    jurusan: {
         type: String,
-        enum: ['Informatika', 'Sistem Informasi', 'Teknik Komputer']
+        required: true,
+        enum: ['Informatika', 'Sistem Informasi', 'Manajemen', 'Akuntansi',
+            'Ilmu Hukum', 'Hukum Bisnis', 'Komunikasi', 'Hubungan Internasional'],
+        index: true
     },
-    semester: Number,
+    fakultas: {
+        type: String,
+        required: true,
+        enum: ['Teknik', 'Ekonomi', 'Hukum', 'FISIP'],
+        index: true
+    },
+    semester_tipe: {
+        type: String,
+        required: true,
+        enum: ['Ganjil', 'Genap'],
+        index: true
+    },
+    semester: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 8
+    },
     deskripsi: String
 }, {
     timestamps: true

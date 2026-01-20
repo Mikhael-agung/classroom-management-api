@@ -11,15 +11,31 @@ const DosenSchema = new mongoose.Schema({
         required: true,
         index: true
     },
-    prodi: {
+    fakultas: {
         type: String,
-        enum: ['Informatika', 'Sistem Informasi', 'Teknik Komputer']
+        required: true,
+        enum: ['Teknik', 'Ekonomi', 'Hukum', 'FISIP'],
+        index: true
     },
-    email: String,
-    mata_kuliah_ids: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MataKuliah'
-    }]
+    jurusan: {
+        type: String,
+        required: true,
+        enum: ['Informatika', 'Sistem Informasi', 'Manajemen', 'Akuntansi',
+            'Ilmu Hukum', 'Hukum Bisnis', 'Komunikasi', 'Hubungan Internasional'],
+        index: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    no_hp: String,
+    keahlian: [String],
+    status: {
+        type: String,
+        enum: ['active', 'non-active', 'cuti'],
+        default: 'active'
+    }
 }, {
     timestamps: true
 });

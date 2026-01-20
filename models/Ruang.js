@@ -14,19 +14,24 @@ const RuangSchema = new mongoose.Schema({
     kapasitas: {
         type: Number,
         required: true,
-        min: 10
+        min: 30,
+        max: 50
     },
     fasilitas: [{
         type: String,
-        enum: ['proyektor', 'AC', 'whiteboard', 'komputer', 'sound system', 'internet']
+        enum: ['proyektor', 'AC', 'whiteboard', 'komputer', 'sound system', 'internet', 'mic', 'layar']
     }],
-    gedung: {
+    lokasi_gedung: {
         type: String,
-        required: true
+        required: true,
+        enum: ['Gedung A', 'Gedung B', 'Gedung C', 'Gedung D'],
+        index: true
     },
     lantai: {
         type: Number,
-        default: 1
+        required: true,
+        min: 1,
+        max: 6
     },
     status: {
         type: String,
